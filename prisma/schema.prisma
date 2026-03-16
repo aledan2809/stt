@@ -1,0 +1,73 @@
+// STT Module - Database Schema
+// Last Updated: 2026-03-12
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   // JSON string, encrypted for sensitive data
+  encrypted Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+model Transcription {
+  id            String   @id @default(cuid())
+  audioPath     String?  // path to original audio file (on-premise)
+  text          String   // raw transcription
+  processedText String?  // after post-processing pipeline
+  provider      String   // whisper-local, vatis, deepgram, azure, etc.
+  model         String?  // whisper-large-v3, nova-2, etc.
+  language      String   @default("ro")
+  duration      Float?   // audio duration in seconds
+  confidence    Float?   // average confidence score
+  wordCount     Int?
+  status        String   @default("completed") // processing, completed, failed
+  metadata      String?  // JSON: speaker labels, timestamps, etc.
+  reportId      String?
+  report        Report?  @relation(fields: [reportId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Report {
+  id             String          @id @default(cuid())
+  title          String
+  content        String          // formatted report content (markdown/HTML)
+  templateId     String?
+  template       Template?       @relation(fields: [templateId], references: [id])
+  patientRef     String?         // reference ID (no PII stored directly)
+  domain         String          @default("general") // medical, dental, general
+  status         String          @default("draft") // draft, final, exported
+  exportedPath   String?         // path to exported PDF
+  transcriptions Transcription[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  name      String
+  structure String   // JSON: sections, fields, prompts
+  domain    String   // medical, dental, general
+  isDefault Boolean  @default(false)
+  reports   Report[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomVocabulary {
+  id           String  @id @default(cuid())
+  term         String
+  domain       String  // medical, dental, general
+  phoneticHint String? // pronunciation hint for STT
+  replacement  String? // auto-correct target
+  isActive     Boolean @default(true)
+}
