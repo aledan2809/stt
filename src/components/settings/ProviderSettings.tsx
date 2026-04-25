@@ -32,7 +32,7 @@ export function ProviderSettings() {
       if (!response.ok) throw new Error("Failed to fetch providers")
       const data = await response.json()
       setProviders(data.providers)
-    } catch (err) {
+    } catch {
       setError("Nu s-au putut incarca providerii")
     } finally {
       setLoading(false)
@@ -83,7 +83,7 @@ export function ProviderSettings() {
       })
       const data = await response.json()
       return { success: data.success, error: data.error }
-    } catch (err) {
+    } catch {
       return { success: false, error: "Eroare de retea" }
     }
   }

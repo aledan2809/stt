@@ -67,7 +67,7 @@ export default function HistoryPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Sigur vrei sa stergi aceasta transcriptie?")) return
+    if (!window.confirm("Sigur vrei să ștergi această transcripție?")) return
 
     try {
       const response = await fetch(`/api/transcribe/${id}`, {
@@ -88,7 +88,7 @@ export default function HistoryPage() {
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return
-    if (!confirm(`Sigur vrei sa stergi ${selectedIds.size} transcrieri?`)) return
+    if (!window.confirm(`Sigur vrei să ștergi ${selectedIds.size} transcripții?`)) return
 
     const idsToDelete = Array.from(selectedIds)
     for (const id of idsToDelete) {
@@ -351,10 +351,17 @@ export default function HistoryPage() {
                         <Badge
                           variant={
                             transcription.status === "completed"
-                              ? "success"
+                              ? "default"
                               : transcription.status === "failed"
                               ? "destructive"
-                              : "warning"
+                              : "secondary"
+                          }
+                          className={
+                            transcription.status === "completed"
+                              ? "bg-green-100 text-green-700 hover:bg-green-200"
+                              : transcription.status === "failed"
+                              ? ""
+                              : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
                           }
                         >
                           {transcription.status === "completed"

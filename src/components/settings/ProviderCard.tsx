@@ -107,7 +107,7 @@ export function ProviderCard({ provider, onSetActive, onConfigure, onTest }: Pro
       } else {
         setWhisperError(data.error || "Nu s-a putut porni serverul")
       }
-    } catch (err) {
+    } catch {
       setWhisperError("Eroare la pornirea serverului")
     } finally {
       setWhisperStarting(false)
@@ -165,7 +165,7 @@ export function ProviderCard({ provider, onSetActive, onConfigure, onTest }: Pro
     try {
       const result = await onTest(provider.id)
       setTestResult(result)
-    } catch (error) {
+    } catch {
       setTestResult({ success: false, error: "Eroare la testare" })
     } finally {
       setIsTesting(false)

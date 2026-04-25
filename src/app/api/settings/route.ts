@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { sttManager, type SupportedProvider } from '@/lib/stt/manager';
+import { sttManager } from '@/lib/stt/manager';
 import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +20,13 @@ const providerConfigSchema = z.object({
 
 const activeProviderSchema = z.object({
   provider: z.enum(['openai-whisper', 'deepgram', 'vatis-tech', 'whisper-local']),
+});
+
+const audioSettingsSchema = z.object({
+  sampleRate: z.enum(['16000', '44100', '48000']).default('16000'),
+  format: z.enum(['webm', 'wav', 'mp3']).default('webm'),
+  noiseReduction: z.boolean().default(false),
+  autoDelete: z.boolean().default(true),
 });
 
 export async function GET(request: NextRequest) {
@@ -39,7 +46,12 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      const value = setting.encrypted ? '***' : JSON.parse(setting.value);
+      let value: unknown = setting.value;
+      if (setting.encrypted) {
+        value = '***';
+      } else {
+        try { value = JSON.parse(setting.value); } catch { /* return raw string */ }
+      }
 
       return NextResponse.json({
         key: setting.key,
@@ -52,13 +64,13 @@ export async function GET(request: NextRequest) {
 
     const sanitizedSettings = settings.map((setting) => ({
       key: setting.key,
-      value: setting.encrypted ? '***' : JSON.parse(setting.value),
+      value: setting.encrypted ? '***' : (() => { try { return JSON.parse(setting.value); } catch { return setting.value; } })(),
       encrypted: setting.encrypted,
       updatedAt: setting.updatedAt,
     }));
 
     return NextResponse.json({ settings: sanitizedSettings });
-  } catch (error: any) {
+  } catch (error) {
     console.error('GET settings error:', error);
     return NextResponse.json(
       { error: 'Failed to retrieve settings' },
@@ -93,11 +105,34 @@ export async function PUT(request: NextRequest) {
       });
     }
 
+    if (action === 'save-audio-settings') {
+      const audioSettings = audioSettingsSchema.parse(body);
+
+      await prisma.setting.upsert({
+        where: { key: 'audio_settings' },
+        update: {
+          value: JSON.stringify(audioSettings),
+          encrypted: false,
+        },
+        create: {
+          key: 'audio_settings',
+          value: JSON.stringify(audioSettings),
+          encrypted: false,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Audio settings saved successfully',
+        settings: audioSettings,
+      });
+    }
+
     return NextResponse.json(
       { error: 'Invalid action parameter' },
       { status: 400 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('PUT settings error:', error);
 
     if (error instanceof z.ZodError) {
@@ -108,7 +143,7 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: error.message || 'Failed to update settings' },
+      { error: error instanceof Error ? error.message : 'Failed to update settings' },
       { status: 500 }
     );
   }

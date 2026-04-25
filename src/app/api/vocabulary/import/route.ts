@@ -24,6 +24,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate file size (max 5MB for CSV/TSV)
+    const MAX_IMPORT_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_IMPORT_SIZE) {
+      return NextResponse.json(
+        { error: `File too large. Maximum size is ${MAX_IMPORT_SIZE / 1024 / 1024}MB` },
+        { status: 400 }
+      );
+    }
+
+    // Validate file type
+    const allowedTypes = ['text/csv', 'text/plain', 'text/tab-separated-values', 'application/csv'];
+    const allowedExtensions = ['.csv', '.tsv', '.txt'];
+    const fileExtension = file.name ? '.' + file.name.split('.').pop()?.toLowerCase() : '';
+    if (file.type && !allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+      return NextResponse.json(
+        { error: 'Invalid file type. Accepted: CSV, TSV, or plain text files' },
+        { status: 400 }
+      );
+    }
+
     const validatedOptions = importSchema.parse({
       domain: domain || 'general',
       skipDuplicates,
@@ -103,31 +123,28 @@ export async function POST(request: NextRequest) {
     } else {
       for (const entry of entries) {
         try {
-          await prisma.customVocabulary.upsert({
-            where: {
-              id: `${entry.domain}-${entry.term}`,
-            },
-            update: {
-              replacement: entry.replacement,
-              phoneticHint: entry.phoneticHint,
-              isActive: entry.isActive,
-            },
-            create: entry,
+          // Find existing entry by term+domain since there's no composite unique constraint
+          const existing = await prisma.customVocabulary.findFirst({
+            where: { term: entry.term, domain: entry.domain },
           });
-          imported++;
-        } catch (e: any) {
-          if (e.code === 'P2002') {
-            await prisma.customVocabulary.updateMany({
-              where: { term: entry.term, domain: entry.domain },
+
+          if (existing) {
+            await prisma.customVocabulary.update({
+              where: { id: existing.id },
               data: {
                 replacement: entry.replacement,
                 phoneticHint: entry.phoneticHint,
+                isActive: entry.isActive,
               },
             });
-            imported++;
           } else {
-            errors.push(`Failed to import "${entry.term}": ${e.message}`);
+            await prisma.customVocabulary.create({
+              data: entry,
+            });
           }
+          imported++;
+        } catch (e: unknown) {
+          errors.push(`Failed to import "${entry.term}": ${e instanceof Error ? e.message : String(e)}`);
         }
       }
     }

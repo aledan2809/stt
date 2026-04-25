@@ -2,7 +2,7 @@
 // Last Updated: 2026-03-12
 
 import { prisma } from '@/lib/db';
-import { encrypt, decrypt, isEncrypted } from '@/lib/crypto';
+import { encrypt, decrypt } from '@/lib/crypto';
 import { STTProvider } from './provider';
 import { OpenAIWhisperProvider } from './providers/openai-whisper';
 import { DeepgramProvider } from './providers/deepgram';
@@ -64,7 +64,12 @@ export class STTManager {
     });
 
     if (setting) {
-      const config = JSON.parse(setting.value);
+      let config: ProviderConfig;
+      try {
+        config = JSON.parse(setting.value) as ProviderConfig;
+      } catch {
+        throw new Error(`Invalid configuration for provider ${providerName}`);
+      }
       if (setting.encrypted && config.apiKey) {
         config.apiKey = decrypt(config.apiKey);
       }
@@ -131,8 +136,8 @@ export class STTManager {
       }
 
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 

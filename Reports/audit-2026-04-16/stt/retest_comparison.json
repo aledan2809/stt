@@ -1,0 +1,81 @@
+{
+  "retest_comparison": {
+    "date": "2026-04-20",
+    "project": "STT Module v0.1.0",
+    "passes": ["wave-5-initial", "wave-5-validate", "wave-5-validate-2"]
+  },
+  "pre_fix": {
+    "build": {
+      "status": "FAIL",
+      "error": "next build doesn't support turbopack yet (TURBOPACK=1 in env)",
+      "secondary_errors": [
+        "NODE_ENV=development causes React context mismatch during prerendering",
+        "Empty interface lint errors (input.tsx, textarea.tsx) treated as build errors",
+        "TooltipProvider SSR context initialization failure"
+      ]
+    },
+    "typescript": {
+      "status": "PASS",
+      "errors": 0
+    },
+    "lint": {
+      "status": "FAIL (interactive prompt)",
+      "error": ".eslintrc.json missing, next lint prompts for ESLint setup instead of running"
+    },
+    "security": {
+      "path_traversal": "VULNERABLE - audioPath not validated before fs.unlink",
+      "json_parse_crashes": "9 unguarded JSON.parse calls can crash server",
+      "model_injection": "VULNERABLE - unvalidated model name passed to child_process.spawn"
+    },
+    "data_integrity": {
+      "vocabulary_import": "BROKEN - upsert uses invalid id pattern, always fails",
+      "vocabulary_bulk": "BROKEN - no duplicate check, crashes on existing terms",
+      "report_delete_orphans": "BUG - deleting report leaves dangling reportId on transcriptions"
+    },
+    "functionality": {
+      "test_provider": "INCOMPLETE - whisper-local excluded from test endpoint"
+    }
+  },
+  "post_fix": {
+    "build": {
+      "status": "PASS",
+      "pages_generated": 19,
+      "static_pages": ["history", "login", "record", "reports", "settings", "/"],
+      "dynamic_routes": ["reports/[id]"],
+      "api_routes": 15,
+      "first_load_js_shared": "87.3 kB"
+    },
+    "typescript": {
+      "status": "PASS",
+      "errors": 0
+    },
+    "lint": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0
+    },
+    "security": {
+      "path_traversal": "FIXED - path validated against project root before deletion",
+      "json_parse_crashes": "FIXED - all 9 locations wrapped in try-catch",
+      "model_injection": "FIXED - model validated against known MODELS list before spawn"
+    },
+    "data_integrity": {
+      "vocabulary_import": "FIXED - uses findFirst+update/create pattern",
+      "vocabulary_bulk": "FIXED - duplicate check before each term creation",
+      "report_delete_orphans": "FIXED - transcription.reportId set to null before report deletion"
+    },
+    "functionality": {
+      "test_provider": "FIXED - whisper-local included in provider enum"
+    }
+  },
+  "improvements": {
+    "build": "FAIL -> PASS",
+    "lint_errors": "FAIL -> 0 errors",
+    "lint_warnings": "35 -> 0 (-100%)",
+    "error_any_instances": "12 -> 0",
+    "security_vulnerabilities": "3 -> 0",
+    "unguarded_json_parse": "9 -> 0",
+    "data_integrity_bugs": "3 -> 0",
+    "functionality_gaps": "1 -> 0"
+  }
+}

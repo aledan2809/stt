@@ -2,6 +2,7 @@
 // Handles auto-start/stop and model switching
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { spawn } from 'child_process';
 import path from 'path';
 import { prisma } from '@/lib/db';
@@ -74,7 +75,8 @@ async function getSavedModel(): Promise<string> {
   const setting = await prisma.setting.findUnique({
     where: { key: 'whisper_local_model' },
   });
-  return setting?.value ? JSON.parse(setting.value) : 'small';
+  if (!setting?.value) return 'small';
+  try { return JSON.parse(setting.value); } catch { return 'small'; }
 }
 
 // GET - server status + available models
@@ -89,16 +91,23 @@ export async function GET() {
       models: MODELS,
       setupReady: true, // venv exists check happens client-side
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
+
+const MODEL_IDS = MODELS.map(m => m.id);
+
+const whisperActionSchema = z.object({
+  action: z.enum(['start', 'stop', 'set-model']),
+  model: z.string().optional(),
+});
 
 // POST - start server, stop server, or change model
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const action = body.action as string;
+    const { action, model: requestModel } = whisperActionSchema.parse(body);
 
     if (action === 'start') {
       const status = await isServerRunning();
@@ -110,7 +119,10 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const model = body.model || await getSavedModel();
+      const model = requestModel || await getSavedModel();
+      if (!MODEL_IDS.includes(model)) {
+        return NextResponse.json({ error: 'Invalid model' }, { status: 400 });
+      }
 
       // Save model preference
       await prisma.setting.upsert({
@@ -121,7 +133,10 @@ export async function POST(request: NextRequest) {
 
       // Start whisper server as detached process
       const whisperDir = path.join(process.cwd(), 'whisper');
-      const venvPython = path.join(whisperDir, 'venv', 'Scripts', 'python.exe');
+      const isWindows = process.platform === 'win32';
+      const venvPython = isWindows
+        ? path.join(whisperDir, 'venv', 'Scripts', 'python.exe')
+        : path.join(whisperDir, 'venv', 'bin', 'python');
       const serverScript = path.join(whisperDir, 'transcribe_server.py');
 
       const child = spawn(venvPython, [serverScript, '--model', model, '--port', String(WHISPER_PORT)], {
@@ -171,8 +186,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'set-model') {
-      const model = body.model as string;
-      if (!MODELS.find(m => m.id === model)) {
+      const model = requestModel;
+      if (!model || !MODEL_IDS.includes(model)) {
         return NextResponse.json({ error: 'Invalid model' }, { status: 400 });
       }
 
@@ -197,7 +212,13 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request parameters', details: error.errors },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

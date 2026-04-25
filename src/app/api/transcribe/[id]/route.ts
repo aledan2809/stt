@@ -47,7 +47,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       wordCount: transcription.wordCount,
       status: transcription.status,
       audioPath: transcription.audioPath,
-      metadata: transcription.metadata ? JSON.parse(transcription.metadata) : null,
+      metadata: transcription.metadata ? (() => { try { return JSON.parse(transcription.metadata!); } catch { return null; } })() : null,
       report: transcription.report,
       createdAt: transcription.createdAt,
       updatedAt: transcription.updatedAt,
@@ -81,7 +81,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     if (transcription.audioPath) {
       try {
         const audioFullPath = path.resolve(process.cwd(), transcription.audioPath);
-        await fs.unlink(audioFullPath);
+        // Prevent path traversal - ensure resolved path stays within project directory
+        const projectRoot = path.resolve(process.cwd());
+        if (!audioFullPath.startsWith(projectRoot + path.sep)) {
+          console.warn('Blocked path traversal attempt:', transcription.audioPath);
+        } else {
+          await fs.unlink(audioFullPath);
+        }
       } catch (fileError) {
         // Log but don't fail if audio file doesn't exist
         console.warn('Could not delete audio file:', fileError);

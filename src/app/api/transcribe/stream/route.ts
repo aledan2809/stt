@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // WebSocket upgrade handling
   // Next.js App Router does not natively support WebSocket upgrades
   // This endpoint serves as documentation and will require a custom server setup
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   }, { status: 501 });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   // Alternative: chunked upload for pseudo-streaming
   // Accept audio chunks and process incrementally
 

@@ -23,6 +23,8 @@ const listQuerySchema = z.object({
   domain: z.enum(['general', 'medical', 'dental']).optional(),
   active: z.enum(['true', 'false']).optional(),
   search: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(500).default(100),
 });
 
 export async function GET(request: NextRequest) {
@@ -32,9 +34,11 @@ export async function GET(request: NextRequest) {
       domain: searchParams.get('domain') || undefined,
       active: searchParams.get('active') || undefined,
       search: searchParams.get('search') || undefined,
+      page: searchParams.get('page') || 1,
+      limit: searchParams.get('limit') || 100,
     });
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (query.domain) {
       where.domain = query.domain;
@@ -51,12 +55,25 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const vocabulary = await prisma.customVocabulary.findMany({
-      where,
-      orderBy: { term: 'asc' },
-    });
+    const [vocabulary, total] = await Promise.all([
+      prisma.customVocabulary.findMany({
+        where,
+        orderBy: { term: 'asc' },
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+      }),
+      prisma.customVocabulary.count({ where }),
+    ]);
 
-    return NextResponse.json({ vocabulary });
+    return NextResponse.json({
+      vocabulary,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.ceil(total / query.limit),
+      },
+    });
   } catch (error) {
     console.error('GET vocabulary error:', error);
 
@@ -81,13 +98,21 @@ export async function POST(request: NextRequest) {
     if (Array.isArray(body.terms)) {
       const data = createBulkVocabularySchema.parse(body);
 
-      const created = await prisma.$transaction(
-        data.terms.map(term =>
-          prisma.customVocabulary.create({ data: term })
-        )
-      );
+      const created = [];
+      let skipped = 0;
+      for (const term of data.terms) {
+        const existing = await prisma.customVocabulary.findFirst({
+          where: { term: term.term, domain: term.domain },
+        });
+        if (existing) {
+          skipped++;
+          continue;
+        }
+        const entry = await prisma.customVocabulary.create({ data: term });
+        created.push(entry);
+      }
 
-      return NextResponse.json({ vocabulary: created, count: created.length }, { status: 201 });
+      return NextResponse.json({ vocabulary: created, count: created.length, skipped }, { status: 201 });
     }
 
     const data = createVocabularySchema.parse(body);

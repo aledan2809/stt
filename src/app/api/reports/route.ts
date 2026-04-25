@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       search: searchParams.get('search') || undefined,
     });
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (query.domain) {
       where.domain = query.domain;

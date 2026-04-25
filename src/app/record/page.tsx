@@ -218,8 +218,9 @@ export default function RecordPage() {
       if (!response.ok) throw new Error("Failed to save report")
 
       // Could redirect to the report page here
-      alert("Raport salvat cu succes!")
-    } catch (err) {
+      // Show success message - could be replaced with toast notification
+      console.log("Raport salvat cu succes!")
+    } catch {
       setError("Nu s-a putut salva raportul")
     }
   }

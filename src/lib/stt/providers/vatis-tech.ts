@@ -63,8 +63,8 @@ export class VatisTechProvider extends STTProvider {
       }
 
       return this.formatResult(data, options);
-    } catch (error: any) {
-      throw new Error(`Vatis Tech transcription failed: ${error.message}`);
+    } catch (error) {
+      throw new Error(`Vatis Tech transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -146,10 +146,10 @@ export class VatisTechProvider extends STTProvider {
       }
 
       return { valid: true };
-    } catch (error: any) {
+    } catch (error) {
       return {
         valid: false,
-        error: error.message || 'Failed to validate API key'
+        error: error instanceof Error ? error.message : 'Failed to validate API key'
       };
     }
   }

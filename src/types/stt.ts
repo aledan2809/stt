@@ -8,7 +8,7 @@ export interface TranscriptResult {
   duration?: number;
   wordCount?: number;
   timestamps?: TimestampSegment[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TimestampSegment {

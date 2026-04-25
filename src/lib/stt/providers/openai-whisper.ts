@@ -56,8 +56,8 @@ export class OpenAIWhisperProvider extends STTProvider {
       result.wordCount = text.split(/\s+/).filter(Boolean).length;
 
       return result;
-    } catch (error: any) {
-      throw new Error(`OpenAI Whisper transcription failed: ${error.message}`);
+    } catch (error) {
+      throw new Error(`OpenAI Whisper transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -81,10 +81,10 @@ export class OpenAIWhisperProvider extends STTProvider {
       await this.client.models.list();
 
       return { valid: true };
-    } catch (error: any) {
+    } catch (error) {
       return {
         valid: false,
-        error: error.message || 'Failed to validate API key'
+        error: error instanceof Error ? error.message : 'Failed to validate API key'
       };
     }
   }

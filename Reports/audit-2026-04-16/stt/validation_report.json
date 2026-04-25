@@ -1,0 +1,120 @@
+{
+  "validation_date": "2026-04-20",
+  "validation_pass": "5-validate-2",
+  "build": {
+    "status": "PASS",
+    "command": "npm run build",
+    "routes_generated": 29,
+    "static_pages": 19,
+    "dynamic_routes": 23
+  },
+  "typescript": {
+    "status": "PASS",
+    "command": "npx tsc --noEmit",
+    "errors": 0
+  },
+  "lint": {
+    "status": "PASS",
+    "command": "npm run lint",
+    "errors": 0,
+    "warnings": 0,
+    "warning_details": "No ESLint warnings or errors"
+  },
+  "wave5_initial_fixes": {
+    "fixes_applied": 8,
+    "files_modified": 16,
+    "categories": {
+      "build_fixes": 3,
+      "type_safety": 9,
+      "lint_cleanup": 18,
+      "security": 1
+    }
+  },
+  "wave5_validate_fixes": {
+    "fixes_applied": 5,
+    "files_modified": 6,
+    "issues": [
+      {
+        "id": "STT-004",
+        "title": "Path traversal vulnerability in DELETE endpoint",
+        "severity": "critical",
+        "file": "src/app/api/transcribe/[id]/route.ts",
+        "fix": "Added path validation guard before file deletion"
+      },
+      {
+        "id": "STT-007",
+        "title": "Unguarded JSON.parse in 5 locations",
+        "severity": "high",
+        "files": [
+          "src/app/api/transcribe/route.ts",
+          "src/app/api/settings/route.ts",
+          "src/lib/stt/manager.ts",
+          "src/app/api/transcribe/[id]/route.ts"
+        ],
+        "fix": "Wrapped all JSON.parse calls in try-catch with appropriate fallbacks"
+      },
+      {
+        "id": "STT-008",
+        "title": "Vocabulary import upsert uses invalid id pattern",
+        "severity": "high",
+        "file": "src/app/api/vocabulary/import/route.ts",
+        "fix": "Replaced invalid upsert with findFirst+update/create pattern"
+      },
+      {
+        "id": "STT-009",
+        "title": "Test-provider excludes whisper-local",
+        "severity": "high",
+        "file": "src/app/api/settings/test-provider/route.ts",
+        "fix": "Added whisper-local to provider enum"
+      }
+    ]
+  },
+  "wave5_validate2_fixes": {
+    "fixes_applied": 6,
+    "files_modified": 5,
+    "issues": [
+      {
+        "id": "STT-018",
+        "title": "Unguarded JSON.parse in templates routes (4 locations)",
+        "severity": "high",
+        "files": [
+          "src/app/api/templates/route.ts",
+          "src/app/api/templates/[id]/route.ts"
+        ],
+        "fix": "Wrapped all JSON.parse calls in try-catch with { sections: [] } fallback"
+      },
+      {
+        "id": "STT-019",
+        "title": "Unguarded JSON.parse in whisper-server getSavedModel()",
+        "severity": "medium",
+        "file": "src/app/api/whisper-server/route.ts",
+        "fix": "Wrapped in try-catch with 'small' fallback default"
+      },
+      {
+        "id": "STT-020",
+        "title": "Report DELETE leaves orphan transcription.reportId references",
+        "severity": "high",
+        "file": "src/app/api/reports/[id]/route.ts",
+        "fix": "Added transcription.updateMany to null out reportId before report deletion"
+      },
+      {
+        "id": "STT-021",
+        "title": "Whisper-server start accepts unvalidated model name",
+        "severity": "low",
+        "file": "src/app/api/whisper-server/route.ts",
+        "fix": "Added model validation against MODELS list before spawn"
+      },
+      {
+        "id": "STT-021b",
+        "title": "Vocabulary bulk POST allows duplicate entries",
+        "severity": "medium",
+        "file": "src/app/api/vocabulary/route.ts",
+        "fix": "Added findFirst duplicate check before creating each term in bulk import"
+      }
+    ]
+  },
+  "total_fixes_all_waves": 19,
+  "total_files_modified": 27,
+  "regression_check": "No regressions - all 29 routes compile, all 19 static pages generate successfully, 0 lint errors, 0 type errors",
+  "conclusion": "STT module passes full validation with 0 errors, 0 warnings. All critical, high, and medium issues resolved. 1 low-severity issue acknowledged (ai-router local dependency)."
+}

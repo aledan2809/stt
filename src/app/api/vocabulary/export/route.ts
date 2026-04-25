@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       format: searchParams.get('format') || 'csv',
     });
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (query.domain) {
       where.domain = query.domain;
@@ -47,11 +47,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const safeDomain = (query.domain || 'all').replace(/[^a-zA-Z0-9_-]/g, '');
+
     if (query.format === 'json') {
       return new NextResponse(JSON.stringify(vocabulary, null, 2), {
         headers: {
           'Content-Type': 'application/json',
-          'Content-Disposition': `attachment; filename="vocabulary-${query.domain || 'all'}.json"`,
+          'Content-Disposition': `attachment; filename="vocabulary-${safeDomain}.json"`,
         },
       });
     }
@@ -74,7 +76,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(csv, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="vocabulary-${query.domain || 'all'}.csv"`,
+        'Content-Disposition': `attachment; filename="vocabulary-${safeDomain}.csv"`,
       },
     });
   } catch (error) {

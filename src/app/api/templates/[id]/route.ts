@@ -44,7 +44,7 @@ export async function GET(
 
     return NextResponse.json({
       ...template,
-      structure: JSON.parse(template.structure),
+      structure: (() => { try { return JSON.parse(template.structure); } catch { return { sections: [] }; } })(),
     });
   } catch (error) {
     console.error('GET template error:', error);
@@ -82,7 +82,7 @@ export async function PUT(
       });
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (data.name !== undefined) {
       updateData.name = data.name;
@@ -107,7 +107,7 @@ export async function PUT(
 
     return NextResponse.json({
       ...template,
-      structure: JSON.parse(template.structure),
+      structure: (() => { try { return JSON.parse(template.structure); } catch { return { sections: [] }; } })(),
     });
   } catch (error) {
     console.error('PUT template error:', error);

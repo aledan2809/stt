@@ -3,10 +3,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { sttManager, type SupportedProvider } from '@/lib/stt/manager';
+import { sttManager } from '@/lib/stt/manager';
 
 const testProviderSchema = z.object({
-  provider: z.enum(['openai-whisper', 'deepgram', 'vatis-tech']),
+  provider: z.enum(['openai-whisper', 'deepgram', 'vatis-tech', 'whisper-local']),
 });
 
 export async function POST(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         error: result.error || 'Connection test failed',
       }, { status: 400 });
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Test provider error:', error);
 
     if (error instanceof z.ZodError) {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to test provider connection' },
+      { success: false, error: error instanceof Error ? error.message : 'Failed to test provider connection' },
       { status: 500 }
     );
   }

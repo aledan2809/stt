@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       domain: searchParams.get('domain') || undefined,
     });
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (query.domain) {
       where.domain = query.domain;
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     const formattedTemplates = templates.map(t => ({
       ...t,
-      structure: JSON.parse(t.structure),
+      structure: (() => { try { return JSON.parse(t.structure); } catch { return { sections: [] }; } })(),
     }));
 
     return NextResponse.json({ templates: formattedTemplates });
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       ...template,
-      structure: JSON.parse(template.structure),
+      structure: (() => { try { return JSON.parse(template.structure); } catch { return { sections: [] }; } })(),
     }, { status: 201 });
   } catch (error) {
     console.error('POST template error:', error);

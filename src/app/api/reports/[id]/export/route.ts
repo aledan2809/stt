@@ -101,7 +101,19 @@ function sanitizeFilename(name: string): string {
     .substring(0, 100);
 }
 
-function generateMarkdown(report: any): string {
+interface ReportWithRelations {
+  title: string;
+  content: string;
+  domain: string;
+  status: string;
+  patientRef: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  template: { name: string } | null;
+  transcriptions: Array<{ text: string; createdAt: Date }>;
+}
+
+function generateMarkdown(report: ReportWithRelations): string {
   const lines: string[] = [];
 
   lines.push(`# ${report.title}`);
@@ -133,7 +145,7 @@ function generateMarkdown(report: any): string {
     lines.push('## Source Transcriptions');
     lines.push('');
 
-    report.transcriptions.forEach((t: any, index: number) => {
+    report.transcriptions.forEach((t, index: number) => {
       lines.push(`### Transcription ${index + 1}`);
       lines.push(`*${new Date(t.createdAt).toLocaleString()}*`);
       lines.push('');
@@ -145,7 +157,7 @@ function generateMarkdown(report: any): string {
   return lines.join('\n');
 }
 
-function generateHtml(report: any): string {
+function generateHtml(report: ReportWithRelations): string {
   const escapedTitle = escapeHtml(report.title);
   const escapedContent = escapeHtml(report.content).replace(/\n/g, '<br>');
 
@@ -197,7 +209,7 @@ function generateHtml(report: any): string {
   <div class="transcriptions">
     <h2>Source Transcriptions</h2>`;
 
-    report.transcriptions.forEach((t: any, index: number) => {
+    report.transcriptions.forEach((t, index: number) => {
       html += `
     <div class="transcription">
       <div class="transcription-header">Transcription ${index + 1}</div>

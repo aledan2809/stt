@@ -109,6 +109,12 @@ export async function DELETE(
       );
     }
 
+    // Disconnect transcriptions before deleting report
+    await prisma.transcription.updateMany({
+      where: { reportId: id },
+      data: { reportId: null },
+    });
+
     await prisma.report.delete({ where: { id } });
 
     return NextResponse.json({ success: true, message: 'Report deleted' });

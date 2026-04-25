@@ -1,7 +1,7 @@
 // STT Module - Deepgram Provider
 // Last Updated: 2026-03-12
 
-import { createClient, LiveTranscriptionEvents } from '@deepgram/sdk';
+import { createClient } from '@deepgram/sdk';
 import type { TranscriptResult, TranscribeOptions, ProviderCapabilities, ProviderConfig } from '@/types/stt';
 import { STTProvider } from '../provider';
 
@@ -46,7 +46,7 @@ export class DeepgramProvider extends STTProvider {
       }
 
       if (options?.includeTimestamps && transcript.words) {
-        transcriptResult.timestamps = transcript.words.map((word: any) => ({
+        transcriptResult.timestamps = transcript.words.map((word: { start: number; end: number; word: string; confidence: number }) => ({
           start: word.start,
           end: word.end,
           text: word.word,
@@ -57,8 +57,8 @@ export class DeepgramProvider extends STTProvider {
       transcriptResult.wordCount = transcript.transcript.split(/\s+/).filter(Boolean).length;
 
       return transcriptResult;
-    } catch (error: any) {
-      throw new Error(`Deepgram transcription failed: ${error.message}`);
+    } catch (error) {
+      throw new Error(`Deepgram transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -90,10 +90,10 @@ export class DeepgramProvider extends STTProvider {
       }
 
       return { valid: true };
-    } catch (error: any) {
+    } catch (error) {
       return {
         valid: false,
-        error: error.message || 'Failed to validate API key'
+        error: error instanceof Error ? error.message : 'Failed to validate API key'
       };
     }
   }

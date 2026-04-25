@@ -85,13 +85,13 @@ export class WhisperLocalProvider extends STTProvider {
       }
 
       return result;
-    } catch (error: any) {
-      if (error.cause?.code === 'ECONNREFUSED') {
+    } catch (error) {
+      if (error instanceof Error && (error.cause as Record<string, string>)?.code === 'ECONNREFUSED') {
         throw new Error(
           'Whisper local server not running. Start it with: whisper\\start-whisper.bat'
         );
       }
-      throw new Error(`Whisper local transcription failed: ${error.message}`);
+      throw new Error(`Whisper local transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -120,7 +120,7 @@ export class WhisperLocalProvider extends STTProvider {
       }
 
       return { valid: true };
-    } catch (error: any) {
+    } catch {
       return {
         valid: false,
         error: 'Whisper server not running. Start it with: whisper\\start-whisper.bat',

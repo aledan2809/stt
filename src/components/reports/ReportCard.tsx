@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, FileText, Edit, Trash2, Download } from "lucide-react"
+import { Calendar, Edit, Trash2, Download } from "lucide-react"
 
 interface Report {
   id: string

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Providers } from '@/components/layout/Providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="ro">
       <body className={inter.className}>
-        <TooltipProvider>
+        <Providers>
           <div className="flex min-h-screen bg-gray-50">
             <Sidebar />
             <main className="flex-1 ml-64">
@@ -28,7 +28,7 @@ export default function RootLayout({
               </div>
             </main>
           </div>
-        </TooltipProvider>
+        </Providers>
       </body>
     </html>
   );

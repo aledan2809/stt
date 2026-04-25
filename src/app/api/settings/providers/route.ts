@@ -7,7 +7,7 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const capabilities = sttManager.getAllProviderCapabilities();
 
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ providers });
-  } catch (error: any) {
+  } catch (error) {
     console.error('GET providers error:', error);
     return NextResponse.json(
       { error: 'Failed to retrieve providers' },
