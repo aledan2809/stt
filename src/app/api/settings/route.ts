@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sttManager } from '@/lib/stt/manager';
 import { prisma } from '@/lib/db';
+import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,7 @@ const audioSettingsSchema = z.object({
   autoDelete: z.boolean().default(true),
 });
 
-export async function GET(request: NextRequest) {
+async function handleGET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get('key');
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+async function handlePUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { searchParams } = new URL(request.url);
@@ -148,3 +149,6 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+export const GET = withRateLimit(rateLimiters.general, handleGET);
+export const PUT = withRateLimit(rateLimiters.general, handlePUT);

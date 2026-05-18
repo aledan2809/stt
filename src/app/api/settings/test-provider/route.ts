@@ -4,12 +4,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sttManager } from '@/lib/stt/manager';
+import { withRateLimit, RateLimiter } from '@/lib/rate-limit';
 
 const testProviderSchema = z.object({
   provider: z.enum(['openai-whisper', 'deepgram', 'vatis-tech', 'whisper-local']),
 });
 
-export async function POST(request: NextRequest) {
+const testRateLimiter = new RateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 3,
+  message: 'Prea multe teste de conexiune. Încearc din nou în 1 minut.',
+});
+
+async function handlePOST(request: NextRequest) {
   try {
     const body = await request.json();
     const { provider } = testProviderSchema.parse(body);
@@ -43,3 +50,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const POST = withRateLimit(testRateLimiter, handlePOST);

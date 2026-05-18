@@ -27,7 +27,7 @@ export class AuthManager {
    * Set authentication password (hashed and stored in settings)
    */
   async setPassword(password: string): Promise<void> {
-    if (password.length < 6) {
+    if (password.trim().length < 6) {
       throw new Error('Password must be at least 6 characters long')
     }
 
