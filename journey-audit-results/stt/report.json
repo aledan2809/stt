@@ -1,0 +1,68 @@
+{
+  "project": "STT",
+  "baseUrl": "http://localhost:3000",
+  "configSource": "/Users/danciulescu/Projects/STT/.journey-audit.json",
+  "timestamp": "2026-05-18T06:41:46.554Z",
+  "totals": {
+    "OK": 5
+  },
+  "findings": [
+    {
+      "page": "Acasa",
+      "href": "/",
+      "status": "OK",
+      "httpStatus": 200,
+      "h1": "STT Module",
+      "notes": [
+        "tables=0 buttons=2 bodyLen=557",
+        "emptyMarkers=1"
+      ],
+      "screenshot": "/Users/danciulescu/Projects/STT/journey-audit-results/stt/screenshots/root.png"
+    },
+    {
+      "page": "Dictare",
+      "href": "/record",
+      "status": "OK",
+      "httpStatus": 200,
+      "h1": "STT Module",
+      "notes": [
+        "tables=0 buttons=6 bodyLen=314"
+      ],
+      "screenshot": "/Users/danciulescu/Projects/STT/journey-audit-results/stt/screenshots/record.png"
+    },
+    {
+      "page": "Rapoarte",
+      "href": "/reports",
+      "status": "OK",
+      "httpStatus": 200,
+      "h1": "STT Module",
+      "notes": [
+        "tables=0 buttons=4 bodyLen=230"
+      ],
+      "screenshot": "/Users/danciulescu/Projects/STT/journey-audit-results/stt/screenshots/reports.png"
+    },
+    {
+      "page": "Istoric",
+      "href": "/history",
+      "status": "OK",
+      "httpStatus": 200,
+      "h1": "STT Module",
+      "notes": [
+        "tables=0 buttons=2 bodyLen=218",
+        "emptyMarkers=1"
+      ],
+      "screenshot": "/Users/danciulescu/Projects/STT/journey-audit-results/stt/screenshots/history.png"
+    },
+    {
+      "page": "Setari",
+      "href": "/settings",
+      "status": "OK",
+      "httpStatus": 200,
+      "h1": "STT Module",
+      "notes": [
+        "tables=0 buttons=24 bodyLen=1363"
+      ],
+      "screenshot": "/Users/danciulescu/Projects/STT/journey-audit-results/stt/screenshots/settings.png"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "STT",
+  "baseUrl": "http://localhost:3000",
+  "navLinks": [
+    { "name": "Acasa", "href": "/" },
+    { "name": "Dictare", "href": "/record" },
+    { "name": "Rapoarte", "href": "/reports" },
+    { "name": "Istoric", "href": "/history" },
+    { "name": "Setari", "href": "/settings" }
+  ],
+  "emptyStateMarkers": "No transcriptions|empty|Nicio|Nu exista|Nu au fost",
+  "errorMarkers": "error|failed|eroare|crashed",
+  "viewport": { "width": 1440, "height": 900 },
+  "pageTimeout": 20000,
+  "settleDelay": 2000
+}
