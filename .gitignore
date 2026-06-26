@@ -43,3 +43,6 @@ next-env.d.ts
 # whisper local
 /whisper/venv
 /whisper/__pycache__
+
+# Secret-rotation backups (.env*.bak-*-rotation) — keep on disk as rollback anchors, never track (forensic 2026-06-25)
+.env*.bak*
